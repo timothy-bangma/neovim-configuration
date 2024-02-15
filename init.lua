@@ -21,12 +21,24 @@ require('paq') {
   'savq/paq-nvim', -- this plugin manager (self updating)
   'nvim-treesitter/nvim-treesitter', -- treesitter for better syntx highlighting
   'nyoom-engineering/oxocarbon.nvim', -- simple theme based on treesitter data
+  'Olical/conjure' -- tools for lispy languages. 
 }.install()
+
+
 
 require ('nvim-treesitter.configs').setup {
   ensure_installed = { 'javascript', 'typescript', 'lua', 'rust', 'fennel', 'zig' },
   highlight = { enable = true },
 }
+
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+  once = true,
+  pattern = { "*.fnl" },
+  callback = function()
+    vim.api.nvim_set_keymap('n', ";;", ':ConjureEvalBuf<CR>', { noremap = true})
+    vim.api.nvim_set_keymap('n', ";'", ':ConjureEvalCurrentForm<CR>', { noremap = true})
+  end,
+})
 
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
