@@ -1,8 +1,18 @@
+vim.g.mapleader = ";"
+vim.g.maplocalleader = ";"
+
+vim.cmd([[
+  let g:conjure#client#scheme#stdio#command = "petite"
+  let g:conjure#client#scheme#stdio#prompt_pattern = "> $"
+  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
+]])
+
 local plugins = require("plugins")({
-	-- actual plugins
-	{ "williamboman/mason.nvim" },
-	{ "stevearc/conform.nvim", opts = {} },
-	{ "nvim-treesitter/nvim-treesitter" },
+	{ "williamboman/mason.nvim" }, -- neovim package manager
+	{ "stevearc/conform.nvim", opts = {} }, -- formatter
+	{ "nvim-treesitter/nvim-treesitter" }, -- syntax highlighter
+	{ "Olical/conjure" }, -- LISP / Scheme REPL tools.
+	{ "m15a/vim-r7rs-syntax" }, -- better r7rs scheme syntax.
 })
 plugins.mason({ "lua_ls", "fennel_language_server" })
 plugins.conform({ lua = { "stylua" }, ["_"] = { "trim_whitespace" } })
@@ -27,7 +37,7 @@ vim.opt.incsearch = true -- search as characters are entered
 vim.opt.ignorecase = true -- ignore case in searches by default
 vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entered
 
-vim.api.nvim_set_keymap("n", ";f", ":Explore<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<localleader>f", ":Explore<CR>", { silent = true })
 
 -- colorscheme
 vim.cmd.colorscheme("slate")
