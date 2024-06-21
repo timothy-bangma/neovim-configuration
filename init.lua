@@ -1,22 +1,24 @@
 vim.g.mapleader = ";"
 vim.g.maplocalleader = ";"
 
-vim.cmd([[
-  let g:conjure#client#scheme#stdio#command = "petite"
-  let g:conjure#client#scheme#stdio#prompt_pattern = "> $"
-  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
-]])
-
 local plugins = require("plugins")({
 	{ "williamboman/mason.nvim" }, -- neovim package manager
 	{ "stevearc/conform.nvim", opts = {} }, -- formatter
 	{ "nvim-treesitter/nvim-treesitter" }, -- syntax highlighter
 	{ "Olical/conjure" }, -- LISP / Scheme REPL tools.
 	{ "m15a/vim-r7rs-syntax" }, -- better r7rs scheme syntax.
+	{ "kepano/flexoki-neovim", name = "flexoki" },
 })
 plugins.mason({ "lua_ls", "fennel_language_server" })
 plugins.conform({ lua = { "stylua" }, ["_"] = { "trim_whitespace" } })
 plugins.treesitter({ "c", "lua" })
+
+vim.cmd([[
+  let g:conjure#filetype#r7rs = 'conjure.client.scheme.stdio'
+  let g:conjure#client#scheme#stdio#command = "csi -quiet -:c"
+  let g:conjure#client#scheme#stdio#prompt_pattern = "\n-#;%d-> "
+  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
+]])
 
 -- Tab
 vim.opt.tabstop = 2 -- number of visual spaces per TAB
@@ -40,4 +42,4 @@ vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entere
 vim.api.nvim_set_keymap("n", "<localleader>f", ":Explore<CR>", { silent = true })
 
 -- colorscheme
-vim.cmd.colorscheme("slate")
+vim.cmd.colorscheme("flexoki-dark")
