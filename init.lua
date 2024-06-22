@@ -1,6 +1,13 @@
 vim.g.mapleader = ";"
 vim.g.maplocalleader = ";"
 
+vim.cmd([[
+  let g:conjure#filetype#r7rs = 'conjure.client.scheme.stdio'
+  let g:conjure#client#scheme#stdio#command = "chibi-scheme"
+  let g:conjure#client#scheme#stdio#prompt_pattern = "> "
+  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
+]])
+
 local plugins = require("plugins")({
 	{ "williamboman/mason.nvim" }, -- neovim package manager
 	{ "stevearc/conform.nvim", opts = {} }, -- formatter
@@ -12,13 +19,6 @@ local plugins = require("plugins")({
 plugins.mason({ "lua_ls", "fennel_language_server" })
 plugins.conform({ lua = { "stylua" }, ["_"] = { "trim_whitespace" } })
 plugins.treesitter({ "c", "lua" })
-
-vim.cmd([[
-  let g:conjure#filetype#r7rs = 'conjure.client.scheme.stdio'
-  let g:conjure#client#scheme#stdio#command = "csi -quiet -:c"
-  let g:conjure#client#scheme#stdio#prompt_pattern = "\n-#;%d-> "
-  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
-]])
 
 -- Tab
 vim.opt.tabstop = 2 -- number of visual spaces per TAB
