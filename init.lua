@@ -15,14 +15,22 @@ local plugins = require("plugins")({
   { "Olical/conjure" },                                   -- LISP / Scheme REPL tools.
   { "m15a/vim-r7rs-syntax" },                             -- better r7rs scheme syntax.
   { "kepano/flexoki-neovim",          name = "flexoki" }, -- theme
+  {
+    'nvim-telescope/telescope.nvim',                      -- searching and finding
+    tag = '0.1.8',
+    dependencies = { 'nvim-lua/plenary.nvim' }            -- many lua utility functions
+  }
 })
-plugins.mason({
-  "lua_ls",
-  -- "fennel_language_server" -- uncomment if cargo installed.
-  "zls"
-})
-plugins.conform({ lua = { "stylua" }, zig = { "zigfmt" }, ["_"] = { "trim_whitespace" } })
-plugins.treesitter({ "c", "lua" })
+
+plugins.mason({ "lua_ls", "zls" })
+plugins.conform({ lua = { "stylua" } })
+plugins.treesitter({ "c", "lua", "zig" })
+
+-- <leader>ff Telescope find_files
+-- <leader>fg Telescope live_grep
+-- <leader>fb Telescope buffers
+-- <leader>fh Telescope help_tags
+plugins.telescope_keymap()
 
 -- Tab
 vim.opt.tabstop = 2      -- number of visual spaces per TAB
