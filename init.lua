@@ -1,6 +1,36 @@
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
+if not vim.uv.fs_stat(lazypath) then
+  print("Bootstrapping lazy package manager")
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+-------------------------
+-- GENERAL VIM OPTIONS --
+-------------------------
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+
 vim.g.mapleader = ";"
 vim.g.maplocalleader = ";"
 
+vim.opt.incsearch = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+vim.cmd.colorscheme("retrobox")
+
+-- conjure scheme client configuration
 vim.cmd([[
   let g:conjure#filetype#r7rs = 'conjure.client.scheme.stdio'
   let g:conjure#client#scheme#stdio#command = "chibi-scheme"
@@ -8,50 +38,56 @@ vim.cmd([[
   let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
 ]])
 
-local plugins = require("plugins")({
-  { "williamboman/mason.nvim" },                          -- neovim package manager
-  { "stevearc/conform.nvim",          opts = {} },        -- formatter
-  { "nvim-treesitter/nvim-treesitter" },                  -- syntax highlighter
-  { "Olical/conjure" },                                   -- LISP / Scheme REPL tools.
-  { "m15a/vim-r7rs-syntax" },                             -- better r7rs scheme syntax.
-  { "kepano/flexoki-neovim",          name = "flexoki" }, -- theme
-  {
-    'nvim-telescope/telescope.nvim',                      -- searching and finding
-    tag = '0.1.8',
-    dependencies = { 'nvim-lua/plenary.nvim' }            -- many lua utility functions
-  }
+--------------------------
+-- PLUGIN CONFIGURATION --
+--------------------------
+require("lazy").setup({
+  -- lsp
+  { 'VonHeikemen/lsp-zero.nvim',       branch = 'v3.x' },                              -- less config lsp
+  { 'neovim/nvim-lspconfig' },                                                         -- neovim lsp configurations
+  { 'hrsh7th/cmp-nvim-lsp' },                                                          -- lsp completion source
+  { 'hrsh7th/nvim-cmp' },                                                              -- completion plugin
+  { 'hrsh7th/cmp-buffer' },                                                            -- buffer source
+  { 'hrsh7th/cmp-path' },                                                              -- path source
+  { 'hrsh7th/cmp-cmdline' },                                                           -- cmdline source
+  -- scheme / lisp / fennel
+  { "Olical/conjure",                  ft = { "scm", "fnl" } },                        -- LISP / Scheme REPL tools.
+  { "m15a/vim-r7rs-syntax",            ft = { "scm" } },                               -- better r7rs scheme syntax.
+  -- treesitter parser installer
+  { "nvim-treesitter/nvim-treesitter", keys = { "<leader>ts", desc = "TreeSitter" } }, -- syntax highlighter
 })
 
-plugins.mason({ "lua_ls", "zls" })
-plugins.conform({ lua = { "stylua" } })
-plugins.treesitter({ "c", "lua", "zig" })
 
--- <leader>ff Telescope find_files
--- <leader>fg Telescope live_grep
--- <leader>fb Telescope buffers
--- <leader>fh Telescope help_tags
-plugins.telescope_keymap()
+-----------------------
+-- LSP CONFIGURATION --
+-----------------------
+local lsp_zero = require('lsp-zero')
 
--- Tab
-vim.opt.tabstop = 2      -- number of visual spaces per TAB
-vim.opt.softtabstop = 2  -- number of spacesin tab when editing
-vim.opt.shiftwidth = 2   -- insert 4 spaces on a tab
-vim.opt.expandtab = true -- tabs are spaces, mainly because of python
+lsp_zero.on_attach(function(client, bufnr)
+  -- https://lsp-zero.netlify.app/v3.x/language-server-configuration.html#default-keybindings
+  lsp_zero.default_keymaps({ buffer = bufnr })
+  lsp_zero.buffer_autoformat()
+end)
 
--- UI config
-vim.opt.number = true         -- enables line numbers
-vim.opt.signcolumn = "number" -- add numbers to each line on the left side
-vim.opt.cursorline = true     -- highlight cursor line underneath the cursor horizontally
-vim.opt.splitbelow = true     -- open new vertical split bottom
-vim.opt.splitright = true     -- open new horizontal splits right
-vim.opt.showmode = false      -- we are experienced, wo don't need the "-- INSERT --" mode hint
+local cmp = require('cmp')
 
--- Searching
-vim.opt.incsearch = true  -- search as characters are entered
-vim.opt.ignorecase = true -- ignore case in searches by default
-vim.opt.smartcase = true  -- but make it case sensitive if an uppercase is entered
+cmp.setup({
+  snippet = {
+    expand = function(args) vim.snippet.expand(args.body) end
+  },
+  sources = cmp.config.sources({
+    { name = 'nvim_lsp' },
+    { name = 'buffer' },
+  })
+})
+cmp.setup.cmdline({ '/', '?' }, { sources = { { name = 'buffer' } } })
 
-vim.api.nvim_set_keymap("n", "<localleader>f", ":Explore<CR>", { silent = true })
+-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+cmp.setup.cmdline(':', {
+  sources = cmp.config.sources({ { name = 'path' } }, { { name = 'cmdline' } }),
+  matching = { disallow_symbol_nonprefix_matching = false }
+})
 
--- colorscheme
-vim.cmd.colorscheme("flexoki-dark")
+local lspconfig = require('lspconfig')
+lspconfig.lua_ls.setup({})
+lspconfig.zls.setup({})
