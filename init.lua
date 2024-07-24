@@ -42,19 +42,36 @@ vim.cmd([[
 -- PLUGIN CONFIGURATION --
 --------------------------
 require("lazy").setup({
-  -- lsp
-  { 'VonHeikemen/lsp-zero.nvim',       branch = 'v3.x' },                              -- less config lsp
-  { 'neovim/nvim-lspconfig' },                                                         -- neovim lsp configurations
-  { 'hrsh7th/cmp-nvim-lsp' },                                                          -- lsp completion source
-  { 'hrsh7th/nvim-cmp' },                                                              -- completion plugin
-  { 'hrsh7th/cmp-buffer' },                                                            -- buffer source
-  { 'hrsh7th/cmp-path' },                                                              -- path source
-  { 'hrsh7th/cmp-cmdline' },                                                           -- cmdline source
-  -- scheme / lisp / fennel
-  { "Olical/conjure",                  ft = { "scm", "fnl" } },                        -- LISP / Scheme REPL tools.
-  { "m15a/vim-r7rs-syntax",            ft = { "scm" } },                               -- better r7rs scheme syntax.
-  -- treesitter parser installer
-  { "nvim-treesitter/nvim-treesitter", keys = { "<leader>ts", desc = "TreeSitter" } }, -- syntax highlighter
+  { "nvim-treesitter/nvim-treesitter" }, -- syntax highlighting
+  {
+    'VonHeikemen/lsp-zero.nvim',         -- less config lsp
+    branch = 'v3.x',
+    dependencies = {
+      { 'neovim/nvim-lspconfig' }, -- neovim lsp configurations
+    }
+
+  },
+  {
+    'hrsh7th/nvim-cmp',           -- completion plugin
+    dependencies = {
+      { 'hrsh7th/cmp-nvim-lsp' }, -- lsp completion source
+      { 'hrsh7th/cmp-buffer' },   -- buffer source
+      { 'hrsh7th/cmp-path' },     -- path source
+      { 'hrsh7th/cmp-cmdline' },  -- cmdline source
+    }
+  },
+  {
+    "Olical/conjure",
+    ft = { "scm", "fnl" },                        -- LISP / Scheme REPL tools.
+    dependencies = {
+      { "m15a/vim-r7rs-syntax", ft = { "scm" } }, -- better r7rs scheme syntax.
+    }
+  },
+  {
+    'nvim-telescope/telescope.nvim', -- file finder / search
+    branch = '0.1.x',
+    dependencies = { 'nvim-lua/plenary.nvim' }
+  },
 })
 
 
@@ -88,6 +105,40 @@ cmp.setup.cmdline(':', {
   matching = { disallow_symbol_nonprefix_matching = false }
 })
 
+-- ---------------- --
+-- TELESCOPE CONFIG --
+-- ---------------- --
+require('telescope').setup {
+  defaults = {
+    layout_strategy = "vertical",
+    layout_config = {
+      mirror = true,
+      prompt_position = "bottom",
+    },
+  }
+}
+
+local builtin = require('telescope.builtin')
+local themes = require('telescope.themes')
+
+vim.api.nvim_set_keymap("n", "<leader>f", "<cmd>lua TelescopeFindFiles()<cr>", {})
+function TelescopeFindFiles()
+  builtin.find_files(themes.get_ivy({ previewer = false }))
+end
+
+vim.api.nvim_set_keymap("n", "<leader>zg", "<cmd>lua ZigSourceSearch()<cr>", {})
+function ZigSourceSearch()
+  builtin.live_grep({
+    search_dirs = {
+      '/opt/zig/lib/std',
+      '/opt/tigerbeetle/src'
+    }
+  })
+end
+
+----------------
+-- LSP CONFIG --
+----------------
 local lspconfig = require('lspconfig')
 lspconfig.lua_ls.setup({})
 lspconfig.zls.setup({})
