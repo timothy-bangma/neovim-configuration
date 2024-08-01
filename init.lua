@@ -28,6 +28,8 @@ vim.opt.incsearch = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
+vim.opt.mouse = ""
+
 vim.cmd.colorscheme("retrobox")
 
 -- conjure scheme client configuration
@@ -62,7 +64,7 @@ require("lazy").setup({
   },
   {
     "Olical/conjure",
-    ft = { "scm", "fnl" },                        -- LISP / Scheme REPL tools.
+    ft = { "scm", "fnl", "lua" },                 -- LISP / Scheme REPL tools.
     dependencies = {
       { "m15a/vim-r7rs-syntax", ft = { "scm" } }, -- better r7rs scheme syntax.
     }
