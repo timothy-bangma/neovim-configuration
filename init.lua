@@ -1,146 +1,66 @@
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+local tab_width = 2
+local leader_key = ';'
+local scheme_client = 'conjure#client#scheme#stdio#'
 
-if not vim.uv.fs_stat(lazypath) then
-  print("Bootstrapping lazy package manager")
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
-end
-vim.opt.rtp:prepend(lazypath)
+vim.g.mapleader = leader_key
+vim.g.maplocalleader = leader_key
 
--------------------------
--- GENERAL VIM OPTIONS --
--------------------------
-vim.opt.tabstop = 2
-vim.opt.softtabstop = 2
-vim.opt.shiftwidth = 2
-vim.opt.expandtab = true
-
-vim.g.mapleader = ";"
-vim.g.maplocalleader = ";"
+vim.opt.softtabstop = tab_width
+vim.opt.shiftwidth = tab_width
+vim.opt.tabstop = tab_width
 
 vim.opt.incsearch = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
+vim.opt.signcolumn = "yes:1"
 
 vim.opt.mouse = ""
 
-vim.cmd.colorscheme("retrobox")
+-- keymapping
+local opts = { noremap = true, silent = true }
+vim.api.nvim_set_keymap('n', '<localleader>ff', ':lua vim.lsp.buf.format()<CR>', opts)
+vim.api.nvim_set_keymap('n', '<localleader>ii', ':lua vim.diagnostic.open_float(nil, {focus=false})<CR>', opts)
 
 -- conjure scheme client configuration
-vim.cmd([[
-  let g:conjure#filetype#r7rs = 'conjure.client.scheme.stdio'
-  let g:conjure#client#scheme#stdio#command = "chibi-scheme"
-  let g:conjure#client#scheme#stdio#prompt_pattern = "> "
-  let g:conjure#client#scheme#stdio#value_prefix_pattern = v:false
-]])
+vim.g[scheme_client .. 'command'] = "chibi-scheme"
+vim.g[scheme_client .. 'value_prefix_pattern'] = ""
+vim.g[scheme_client .. 'prompt_pattern'] = "> "
 
---------------------------
--- PLUGIN CONFIGURATION --
---------------------------
-require("lazy").setup({
-  { "nvim-treesitter/nvim-treesitter" }, -- syntax highlighting
-  {
-    'VonHeikemen/lsp-zero.nvim',         -- less config lsp
-    branch = 'v3.x',
-    dependencies = {
-      { 'neovim/nvim-lspconfig' }, -- neovim lsp configurations
-    }
+-- colorscheme configuring based on treesitter
+vim.cmd.colorscheme("quiet")
 
-  },
-  {
-    'hrsh7th/nvim-cmp',           -- completion plugin
-    dependencies = {
-      { 'hrsh7th/cmp-nvim-lsp' }, -- lsp completion source
-      { 'hrsh7th/cmp-buffer' },   -- buffer source
-      { 'hrsh7th/cmp-path' },     -- path source
-      { 'hrsh7th/cmp-cmdline' },  -- cmdline source
-    }
-  },
-  {
-    "Olical/conjure",
-    ft = { "scm", "fnl", "lua" },                 -- LISP / Scheme REPL tools.
-    dependencies = {
-      { "m15a/vim-r7rs-syntax", ft = { "scm" } }, -- better r7rs scheme syntax.
-    }
-  },
-  {
-    'nvim-telescope/telescope.nvim', -- file finder / search
-    branch = '0.1.x',
-    dependencies = { 'nvim-lua/plenary.nvim' }
-  },
-})
-
-
------------------------
--- LSP CONFIGURATION --
------------------------
-local lsp_zero = require('lsp-zero')
-
-lsp_zero.on_attach(function(client, bufnr)
-  -- https://lsp-zero.netlify.app/v3.x/language-server-configuration.html#default-keybindings
-  lsp_zero.default_keymaps({ buffer = bufnr })
-  lsp_zero.buffer_autoformat()
-end)
-
-local cmp = require('cmp')
-
-cmp.setup({
-  snippet = {
-    expand = function(args) vim.snippet.expand(args.body) end
-  },
-  sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
-    { name = 'buffer' },
-  })
-})
-cmp.setup.cmdline({ '/', '?' }, { sources = { { name = 'buffer' } } })
-
--- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  sources = cmp.config.sources({ { name = 'path' } }, { { name = 'cmdline' } }),
-  matching = { disallow_symbol_nonprefix_matching = false }
-})
-
--- ---------------- --
--- TELESCOPE CONFIG --
--- ---------------- --
-require('telescope').setup {
-  defaults = {
-    layout_strategy = "vertical",
-    layout_config = {
-      mirror = true,
-      prompt_position = "bottom",
-    },
-  }
-}
-
-local builtin = require('telescope.builtin')
-local themes = require('telescope.themes')
-
-vim.api.nvim_set_keymap("n", "<leader>f", "<cmd>lua TelescopeFindFiles()<cr>", {})
-function TelescopeFindFiles()
-  builtin.find_files(themes.get_ivy({ previewer = false }))
+local function hi(groups, format)
+	for _, group in pairs(groups) do vim.api.nvim_set_hl(0, group, format) end
 end
 
-vim.api.nvim_set_keymap("n", "<leader>zg", "<cmd>lua ZigSourceSearch()<cr>", {})
-function ZigSourceSearch()
-  builtin.live_grep({
-    search_dirs = {
-      '/opt/zig/lib/std',
-      '/opt/tigerbeetle/src'
-    }
-  })
+hi({ 'NormalFloat' }, { bg = 'None' })
+hi({ 'Comment', 'Delimiter', 'Operator' }, { fg = '#3c3c3c' })
+hi({ 'Keyword', 'Conditional' }, { fg = '#6d6d6d', bold = true })
+hi({ 'Boolean', 'Constant', 'String' }, { fg = '#a2a2a2' })
+
+-- assumes github. makes things simpler
+local function packadd(repo_list)
+	for _, repo_name in pairs(repo_list) do
+		local repo = 'https://github.com/' .. repo_name
+		local outdir = vim.fn.stdpath('data') .. "/" .. repo_name
+
+		if not vim.uv.fs_stat(outdir) then
+			print('Downloading [' .. repo_name .. '] to [' .. outdir .. ']')
+			vim.fn.system({ 'git', 'clone', repo, outdir })
+		end
+		vim.opt.rtp:prepend(outdir)
+	end
 end
 
-----------------
--- LSP CONFIG --
-----------------
-local lspconfig = require('lspconfig')
-lspconfig.lua_ls.setup({})
-lspconfig.zls.setup({})
+-- plugins
+packadd({
+	'junegunn/fzf',
+	'junegunn/fzf.vim',
+	'neovim/nvim-lspconfig',
+	'nvim-treesitter/nvim-treesitter',
+	'olical/conjure',
+})
+
+-- lsp configuration
+require('lspconfig').lua_ls.setup {}
+vim.diagnostic.config { virtual_text = false, underline = false }
