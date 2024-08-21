@@ -1,27 +1,20 @@
-local tab_width = 2
 local leader_key = ';'
-local scheme_client = 'conjure#client#scheme#stdio#'
-
 vim.g.mapleader = leader_key
 vim.g.maplocalleader = leader_key
 
+local tab_width = 2
 vim.opt.softtabstop = tab_width
 vim.opt.shiftwidth = tab_width
 vim.opt.tabstop = tab_width
 
 vim.opt.incsearch = true
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
 vim.opt.signcolumn = "yes:1"
 
 vim.opt.mouse = ""
 
--- keymapping
-local opts = { noremap = true, silent = true }
-vim.api.nvim_set_keymap('n', '<localleader>ff', ':lua vim.lsp.buf.format()<CR>', opts)
-vim.api.nvim_set_keymap('n', '<localleader>ii', ':lua vim.diagnostic.open_float(nil, {focus=false})<CR>', opts)
-
 -- conjure scheme client configuration
+vim.g["conjure#mapping#doc_word"] = false
+local scheme_client = 'conjure#client#scheme#stdio#'
 vim.g[scheme_client .. 'command'] = "chibi-scheme"
 vim.g[scheme_client .. 'value_prefix_pattern'] = ""
 vim.g[scheme_client .. 'prompt_pattern'] = "> "
@@ -29,14 +22,6 @@ vim.g[scheme_client .. 'prompt_pattern'] = "> "
 -- colorscheme configuring based on treesitter
 vim.cmd.colorscheme("quiet")
 
-local function hi(groups, format)
-	for _, group in pairs(groups) do vim.api.nvim_set_hl(0, group, format) end
-end
-
-hi({ 'NormalFloat' }, { bg = 'None' })
-hi({ 'Comment', 'Delimiter', 'Operator' }, { fg = '#3c3c3c' })
-hi({ 'Keyword', 'Conditional' }, { fg = '#6d6d6d', bold = true })
-hi({ 'Boolean', 'Constant', 'String' }, { fg = '#a2a2a2' })
 
 -- assumes github. makes things simpler
 local function packadd(repo_list)
@@ -63,4 +48,51 @@ packadd({
 
 -- lsp configuration
 require('lspconfig').lua_ls.setup {}
+require('lspconfig').zls.setup {}
+
 vim.diagnostic.config { virtual_text = false, underline = false }
+vim.api.nvim_set_keymap('n', '<leader><leader>', ':lua vim.lsp.buf.format()<CR>', { noremap = true, silent = true })
+
+-- treesitter config
+require('nvim-treesitter.configs').setup {
+	highlight = {
+		enable = true,
+		additional_vim_regex_highlighting = false,
+	},
+}
+
+local function hi(groups, format)
+	for _, group in pairs(groups) do vim.api.nvim_set_hl(0, group, format) end
+end
+
+local dark = '#3c3c3c'
+local dim = '#a2a2a2'
+
+hi({ 'NormalFloat' }, { bg = 'None' })
+hi({
+		'@keyword',
+		'@keyword.function',
+		'@keyword.conditional'
+	},
+	{ bold = true }
+)
+hi({
+		'@lsp.type.struct',
+		'@lsp.type.parameter'
+	},
+	{ fg = dim }
+)
+hi({
+		'@lsp.type.type',
+		'@lsp.type.namespace',
+		'@lsp.type.string',
+		'@string'
+	},
+	{ fg = dim, bold = false }
+)
+hi({
+		'Comment',
+		'@lsp.type.comment',
+	},
+	{ fg = dark, bold = false, italic = true }
+)
