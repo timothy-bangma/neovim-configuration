@@ -19,10 +19,6 @@ vim.g[scheme_client .. 'command'] = "chibi-scheme"
 vim.g[scheme_client .. 'value_prefix_pattern'] = ""
 vim.g[scheme_client .. 'prompt_pattern'] = "> "
 
--- colorscheme configuring based on treesitter
-vim.cmd.colorscheme("quiet")
-
-
 -- assumes github. makes things simpler
 local function packadd(repo_list)
 	for _, repo_name in pairs(repo_list) do
@@ -44,7 +40,10 @@ packadd({
 	'neovim/nvim-lspconfig',
 	'nvim-treesitter/nvim-treesitter',
 	'olical/conjure',
+	'xhcf/quiet-extended',
 })
+
+vim.cmd.colorscheme("quiet-extended")
 
 -- lsp configuration
 require('lspconfig').lua_ls.setup {}
@@ -60,39 +59,3 @@ require('nvim-treesitter.configs').setup {
 		additional_vim_regex_highlighting = false,
 	},
 }
-
-local function hi(groups, format)
-	for _, group in pairs(groups) do vim.api.nvim_set_hl(0, group, format) end
-end
-
-local dark = '#3c3c3c'
-local dim = '#a2a2a2'
-
-hi({ 'NormalFloat' }, { bg = 'None' })
-hi({
-		'@keyword',
-		'@keyword.function',
-		'@keyword.conditional'
-	},
-	{ bold = true }
-)
-hi({
-		'@lsp.type.struct',
-		'@lsp.type.parameter'
-	},
-	{ fg = dim }
-)
-hi({
-		'@lsp.type.type',
-		'@lsp.type.namespace',
-		'@lsp.type.string',
-		'@string'
-	},
-	{ fg = dim, bold = false }
-)
-hi({
-		'Comment',
-		'@lsp.type.comment',
-	},
-	{ fg = dark, bold = false, italic = true }
-)
