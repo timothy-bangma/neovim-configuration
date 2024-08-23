@@ -5,7 +5,7 @@ local function packadd(repo_list)
 		local outdir = vim.fn.stdpath('data') .. "/" .. repo_name
 
 		if not vim.uv.fs_stat(outdir) then
-			print('Downloading [' .. repo_name .. '] to [' .. outdir .. '] from [' .. repo .. ']')
+			print('Downloading [' .. repo_name .. '] to [' .. outdir .. ']')
 			vim.fn.system({ 'git', 'clone', repo, outdir })
 		end
 		vim.opt.rtp:prepend(outdir)
