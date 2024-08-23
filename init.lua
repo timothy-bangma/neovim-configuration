@@ -1,16 +1,11 @@
 --- downloads plugins from github, and adds them to the runtime path.
 local function packadd(repo_list)
-	for _, repo_name in pairs(repo_list) do
-		local repo = repo_name
-		if (repo_name == "xhcf/quiet-extended") then
-			repo = 'https://git.pub.solar/' .. repo
-		else
-			repo = 'https://github.com/' .. repo
-		end
+	for _, repo in pairs(repo_list) do
+		local repo_name = string.gmatch(repo, "[^/]+/[^/]+$")()
 		local outdir = vim.fn.stdpath('data') .. "/" .. repo_name
 
 		if not vim.uv.fs_stat(outdir) then
-			print('Downloading [' .. repo_name .. '] to [' .. outdir .. ']')
+			print('Downloading [' .. repo_name .. '] to [' .. outdir .. '] from [' .. repo .. ']')
 			vim.fn.system({ 'git', 'clone', repo, outdir })
 		end
 		vim.opt.rtp:prepend(outdir)
@@ -44,12 +39,12 @@ vim.opt.signcolumn = "yes:1"
 vim.opt.mouse = ""
 
 packadd({
-	'junegunn/fzf',
-	'junegunn/fzf.vim',
-	'neovim/nvim-lspconfig',
-	'nvim-treesitter/nvim-treesitter',
-	'olical/conjure',
-	'xhcf/quiet-extended',
+	'https://github.com/junegunn/fzf',
+	'https://github.com/junegunn/fzf.vim',
+	'https://github.com/neovim/nvim-lspconfig',
+	'https://github.com/nvim-treesitter/nvim-treesitter',
+	'https://github.com/olical/conjure',
+	'https://git.pub.solar/xhcf/quiet-extended',
 })
 
 vim.cmd.colorscheme("quiet-extended")
