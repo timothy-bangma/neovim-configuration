@@ -1,7 +1,12 @@
 --- downloads plugins from github, and adds them to the runtime path.
 local function packadd(repo_list)
 	for _, repo_name in pairs(repo_list) do
-		local repo = 'https://github.com/' .. repo_name
+		local repo = repo_name
+		if (repo_name == "xhcf/quiet-extended") then
+			repo = 'https://git.pub.solar/' .. repo
+		else
+			repo = 'https://github.com/' .. repo
+		end
 		local outdir = vim.fn.stdpath('data') .. "/" .. repo_name
 
 		if not vim.uv.fs_stat(outdir) then
