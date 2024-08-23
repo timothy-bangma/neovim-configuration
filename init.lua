@@ -55,7 +55,7 @@ vim.g[scheme_client .. 'command'] = "chibi-scheme"
 vim.g[scheme_client .. 'value_prefix_pattern'] = false
 vim.g[scheme_client .. 'prompt_pattern'] = "> "
 
-lsp({ 'lua_ls', 'zls', 'gopls' })
+lsp({ 'lua_ls', 'zls', 'gopls', 'clangd' })
 
 vim.diagnostic.config { virtual_text = false, underline = false }
 
