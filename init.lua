@@ -1,4 +1,12 @@
---- downloads plugins from github, and adds them to the runtime path.
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+
+vim.opt.incsearch = true
+vim.opt.signcolumn = "yes:1"
+vim.g.maplocalleader = ';'
+
+--- downloads plugins and adds them to the runtime path.
 local function packadd(repo_list)
 	for _, repo in pairs(repo_list) do
 		local repo_name = string.gmatch(repo, "[^/]+/[^/]+$")()
@@ -12,56 +20,34 @@ local function packadd(repo_list)
 	end
 end
 
---- activates lsp client configs
-local function lsp(lsp_list)
-	local cfg = require('lspconfig')
-	for _, lsp_name in pairs(lsp_list) do cfg[lsp_name].setup {} end
-end
-
---- shortcut for nnoremap silent
-local function nmap(keys, fn)
-	local opts = { noremap = true, silent = true }
-	vim.api.nvim_set_keymap('n', keys, ':lua ' .. fn .. '<CR>', opts)
-end
-
-local leader_key = ';'
-vim.g.mapleader = leader_key
-vim.g.maplocalleader = leader_key
-
-local tab_width = 2
-vim.opt.softtabstop = tab_width
-vim.opt.shiftwidth = tab_width
-vim.opt.tabstop = tab_width
-
-vim.opt.incsearch = true
-vim.opt.signcolumn = "yes:1"
-
-vim.opt.mouse = ""
-
 packadd({
+	-- fzf and its various integrations
 	'https://github.com/junegunn/fzf',
 	'https://github.com/junegunn/fzf.vim',
+	-- lsp configurations, for analysis on save.
 	'https://github.com/neovim/nvim-lspconfig',
+	-- treesitter grammers, for syntax highlighting
 	'https://github.com/nvim-treesitter/nvim-treesitter',
+	-- scheme, lisp, lua REPL.
 	'https://github.com/olical/conjure',
+	-- configuration to make chibi-scheme the default.
+	'https://git.pub.solar/xhcf/conjure-chibi-scheme',
+	-- personal treesitter extension to the quiet.vim theme.
 	'https://git.pub.solar/xhcf/quiet-extended',
 })
 
-vim.cmd.colorscheme("quiet-extended")
-
-local scheme_client = 'conjure#client#scheme#stdio#'
-vim.g["conjure#mapping#doc_word"] = false
-vim.g[scheme_client .. 'command'] = "chibi-scheme"
-vim.g[scheme_client .. 'value_prefix_pattern'] = false
-vim.g[scheme_client .. 'prompt_pattern'] = "> "
-
-lsp({ 'lua_ls', 'zls', 'gopls', 'clangd' })
+require('lspconfig').lua_ls.setup {}
+require('lspconfig').zls.setup {}
+require('lspconfig').clangd.setup {}
 
 vim.diagnostic.config { virtual_text = false, underline = false }
-
-nmap('<leader><leader>', 'vim.lsp.buf.format()')
-nmap('gD', 'vim.lsp.buf.definition()')
+local opts = { noremap = true, silent = true }
+vim.api.nvim_set_keymap('n', ';;', ':lua vim.lsp.buf.format()<CR>', opts)
+vim.api.nvim_set_keymap('n', 'gD', ':lua vim.lsp.buf.definition()<CR>', opts)
 
 require('nvim-treesitter.configs').setup {
-	highlight = { enable = true, additional_vim_regex_highlighting = false },
+	highlight = { enable = true, additional_vim_regex_highlighting = false }
 }
+require('conjure-chibi').setup {}
+
+vim.cmd.colorscheme("quiet-extended")
