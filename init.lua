@@ -21,23 +21,12 @@ local function packadd(repo_list)
 end
 
 packadd({
-	-- fzf and its various integrations
-	'https://github.com/junegunn/fzf',
-	'https://github.com/junegunn/fzf.vim',
-	-- lsp configurations, for analysis on save.
 	'https://github.com/neovim/nvim-lspconfig',
-	-- treesitter grammers, for syntax highlighting
 	'https://github.com/nvim-treesitter/nvim-treesitter',
-	-- scheme, lisp, lua REPL.
-	'https://github.com/olical/conjure',
-	-- configuration to make chibi-scheme the default.
-	'https://git.pub.solar/xhcf/conjure-chibi-scheme',
-	-- personal treesitter extension to the quiet.vim theme.
 	'https://git.pub.solar/xhcf/quiet-extended',
 })
 
 require('lspconfig').lua_ls.setup {}
-require('lspconfig').zls.setup {}
 require('lspconfig').clangd.setup {}
 
 vim.diagnostic.config { virtual_text = false, underline = false }
@@ -48,6 +37,5 @@ vim.api.nvim_set_keymap('n', 'gD', ':lua vim.lsp.buf.definition()<CR>', opts)
 require('nvim-treesitter.configs').setup {
 	highlight = { enable = true, additional_vim_regex_highlighting = false }
 }
-require('conjure-chibi').setup {}
 
 vim.cmd.colorscheme("quiet-extended")
