@@ -9,21 +9,20 @@ vim.g.maplocalleader = ';'
 --- downloads plugins and adds them to the runtime path.
 local function packadd(repo_list)
 	for _, repo in pairs(repo_list) do
-		local repo_name = string.gmatch(repo, "[^/]+/[^/]+$")()
-		local outdir = vim.fn.stdpath('data') .. "/" .. repo_name
+		local outdir = vim.fn.stdpath('data') .. "/" .. repo
 
 		if not vim.uv.fs_stat(outdir) then
-			print('Downloading [' .. repo_name .. '] to [' .. outdir .. ']')
-			vim.fn.system({ 'git', 'clone', repo, outdir })
+			print('Downloading [' .. repo .. '] ...')
+			vim.fn.system({ 'git', 'clone', "https://github.com/" .. repo, outdir })
 		end
 		vim.opt.rtp:prepend(outdir)
 	end
 end
 
 packadd({
-	'https://github.com/neovim/nvim-lspconfig',
-	'https://github.com/nvim-treesitter/nvim-treesitter',
-	'https://git.pub.solar/xhcf/quiet-extended',
+	'neovim/nvim-lspconfig',
+	'nvim-treesitter/nvim-treesitter',
+	'timothy-bangma/quiet-extended',
 })
 
 require('lspconfig').lua_ls.setup {}
