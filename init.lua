@@ -27,6 +27,7 @@ packadd({
 
 require('lspconfig').lua_ls.setup {}
 require('lspconfig').clangd.setup {}
+require('lspconfig').zls.setup {}
 
 vim.diagnostic.config { virtual_text = false, underline = false }
 local opts = { noremap = true, silent = true }
