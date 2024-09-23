@@ -6,6 +6,8 @@ vim.opt.incsearch = true
 vim.opt.signcolumn = "yes:1"
 vim.g.maplocalleader = ';'
 
+vim.opt.statusline="%f%m%=%y 0x%B %l:%c %p%%"
+
 --- downloads plugins and adds them to the runtime path.
 local function packadd(repo_list)
 	for _, repo in pairs(repo_list) do
